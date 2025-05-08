@@ -1,7 +1,12 @@
+version: '3.8'
+
 services:
 
   scraper:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: college_housing_scraper
     working_dir: /app
     command: python scraper.py
     volumes:
@@ -9,9 +14,15 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    networks:
+      - college_housing_network
+    restart: on-failure
 
   web:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: college_housing_web
     ports:
       - "8000:5000"
     volumes:
@@ -26,37 +37,58 @@ services:
         condition: service_healthy
     environment:
       - POSTGRES_HOST=database
-      - POSTGRES_DB=test_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=team13
+      - POSTGRES_DB=housing_db
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-college_housing_pass}
+    networks:
+      - college_housing_network
+
   redis:
     image: "redis:alpine"
+    container_name: college_housing_redis
+    restart: unless-stopped
+    networks:
+      - college_housing_network
+    volumes:
+      - redis_data:/data
+
   database:
-    container_name: postgres_container
-    image: postgres:15
+    container_name: college_housing_postgres
+    image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: team13
-      POSTGRES_DB: test_db
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-college_housing_pass}
+      POSTGRES_DB: housing_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - college_housing_network
+
   adminer:
-    container_name: adminer_container
+    container_name: college_housing_adminer
     image: adminer
     restart: always
     depends_on:
       - database
     ports:
-      - 8080:8080
+      - "8080:8080"
+    networks:
+      - college_housing_network
 
 volumes:
   postgres_data:
     driver: local
+  redis_data:
+    driver: local
+
+networks:
+  college_housing_network:
+    driver: bridge
