@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Binghamton Housing Portal - Main Entry Point
+College Housing Platform - Main Entry Point
 
-This file serves as the primary entry point for the Binghamton Housing Portal application.
+This file serves as the primary entry point for the College Housing Platform application.
 It redirects to the actual server implementation in src/server.py.
 """
 
@@ -20,7 +20,7 @@ if __name__ == "__main__":
         # Get port from environment or use default
         port = int(os.environ.get("PORT", 5000))
         
-        print(f"Starting Binghamton Housing Portal on port {port}...")
+        print(f"Starting College Housing Platform on port {port}...")
         print("Visit http://localhost:{} in your browser".format(port))
         
         # Run the Flask application
