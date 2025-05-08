@@ -1,36 +1,33 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/vfKrPwQS)
-# Binghamton Housing
+# College Housing Platform
 
-## CS 445 Final Project
-### Spring 2025
+## Overview
+The College Housing Platform is designed to help students find suitable housing options near their college campus. This platform provides a user-friendly interface to browse, search, and filter housing listings, making it easier for students to find their ideal living arrangements.
 
-### Team: Team 13
-* Andy Luna
-* Sergio Soria
-* Spencer Mines
+## Features
+- Property listings with detailed information
+- Search and filter capabilities
+- User authentication system
+- Scraper to collect housing data
+- Mobile-responsive design
+
+## Technology Stack
+* **Backend**: Flask (Python)
+* **Database**: PostgreSQL
+* **Frontend**: HTML, CSS, JavaScript
+* **Containerization**: Docker
+* **Data Collection**: BeautifulSoup4, Requests
 
 ## Getting Started
-This project scrapes property data from Amicus Properties website, focusing on 1-bedroom listings for Binghamton University students. It extracts title, pricing, location, and link information and stores it in a PostgreSQL database. The data is then accessible via a RESTful API built with Flask.
 
-### Roadmap
-- [ ] Add user authentication for API endpoints
-- [ ] Implement a frontend interface to display property data
-- [ ] Add filters for additional property features (utilities, amenities, etc.)
-- [ ] Implement scheduled scraping to keep data updated
-- [ ] Add email notifications for new listings
-  
-## SRS
-https://docs.google.com/document/d/1P_lsExu2DCcdzXVe-p1d0KUV1bhqFS2ONDamPqfjyyM/edit?tab=t.0
-  
 ### Prerequisites
 * [Docker](https://www.docker.com/)
 * [Docker Compose](https://docs.docker.com/compose/)
 
-### Installing
+### Installation
 1. Clone the repository
 ```
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/Spencer29496/College-Housing-Platform.git
+cd College-Housing-Platform
 ```
 
 2. Build and start the Docker containers
@@ -38,55 +35,38 @@ cd <repository-directory>
 docker-compose up -d
 ```
 
-3. The API will be available at http://localhost:8000
-4. You can also access the database admin interface at http://localhost:8080
+3. Access the application
+   - Web interface: http://localhost:5000
+   - API: http://localhost:5000/api
+   - Database admin: http://localhost:8080
 
-### API Endpoints
+## API Endpoints
 - `GET /properties` - Get all properties
-- `GET /properties?bedrooms=1` - Get properties filtered by number of bedrooms
+- `GET /properties?bedrooms=1` - Filter properties by number of bedrooms
 - `GET /properties/<id>` - Get a specific property by ID
 - `POST /refresh` - Trigger a new data scrape to refresh the database
 
-## Running manually
-To run the scraper manually:
+## Development
+
+### Running Locally Without Docker
+1. Create and activate a virtual environment
 ```
-docker exec -it <container_id> python run_scraper.py
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-## Built With
-* [Flask](https://flask.palletsprojects.com/) - Web framework
-* [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/) - HTML parsing
-* [Requests](https://docs.python-requests.org/) - HTTP requests
-* [PostgreSQL](https://www.postgresql.org/) - Database
-* [Psycopg2](https://www.psycopg.org/) - PostgreSQL adapter for Python
-* [Docker](https://www.docker.com/) - Containerization
+2. Install dependencies
+```
+pip install -r requirements.txt
+```
+
+3. Run the application
+```
+python app.py
+```
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE.txt](./LICENSE.txt) file for details.
 
-MIT License
-
-Copyright (c) 2025 Binghamton Housing - Team 13 by Andy Luna, Sergio Soria, and Spencer Mines
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
-## Acknowledgments
-* Amicus Properties for providing housing options for students
-* Binghamton University Housing Resources
+## Contributors
+* Spencer Mines
