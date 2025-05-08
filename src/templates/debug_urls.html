@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Debugging Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Apartment URL Debugging</h1>
+    <p>This page displays all apartment URLs directly from the API to help debug URL issues.</p>
+    
+    <div id="loading">Loading apartment listings...</div>
+    <table id="listings-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Database URL</th>
+                <th>Test Link</th>
+            </tr>
+        </thead>
+        <tbody id="listings-body">
+            <!-- Data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const listingsBody = document.getElementById('listings-body');
+            const loadingDiv = document.getElementById('loading');
+            
+            // Fetch all listings from the API
+            fetch('/housing/api/listings')
+                .then(response => response.json())
+                .then(data => {
+                    // Clear loading message
+                    loadingDiv.style.display = 'none';
+                    
+                    // Filter only listings with "Apt" in the title
+                    const apartmentListings = data.filter(listing => 
+                        listing.title && listing.title.includes('Apt')
+                    );
+                    
+                    // Sort by property ID
+                    apartmentListings.sort((a, b) => a.id - b.id);
+                    
+                    // Generate table rows
+                    apartmentListings.forEach(listing => {
+                        const row = document.createElement('tr');
+                        
+                        // Create cells
+                        row.innerHTML = `
+                            <td>${listing.id}</td>
+                            <td>${listing.title}</td>
+                            <td>${listing.url}</td>
+                            <td><a href="${listing.url}" target="_blank">Test Link</a></td>
+                        `;
+                        
+                        // Add row to table
+                        listingsBody.appendChild(row);
+                    });
+                    
+                    console.log('Total apartment listings:', apartmentListings.length);
+                })
+                .catch(error => {
+                    console.error('Error fetching listings:', error);
+                    loadingDiv.textContent = 'Error loading listings: ' + error.message;
+                });
+        });
+    </script>
+</body>
+</html> 

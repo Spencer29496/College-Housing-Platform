@@ -1,0 +1,20 @@
+Sergio:
+(classes taking) Networks, Data mining: - Novice
+C++ - Proficient
+Python - Competent 
+
+Spencer:
+(classes taken) AI, Programming Languages, High Performance Computing
+(classes taking) Design Patters, Computer Vision
+Python - Proficient
+Java - Competent
+C++ - Competent
+SQL, HTML - Novice
+
+
+Andy:
+(classes taken) intro to AI, Networks, Comp Sec 
+(classes taking) cybersecurity, distributed systems
+C++ - Competent
+Python - Competent
+Pytorch, pandas - Novice

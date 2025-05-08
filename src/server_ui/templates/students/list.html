@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student List</title>
+    <link rel = "stylesheet" href = "{{ url_for('static', filename = 'styles/list.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <h1>Student Management</h1>
+        <div class="navbar-right">
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Student List</h2>
+        
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="year-filter">Year</label>
+                <select id="year-filter">
+                    <option value="">All Years</option>
+                    <option value="1">Freshman</option>
+                    <option value="2">Sophomore</option>
+                    <option value="3">Junior</option>
+                    <option value="4">Senior</option>
+                    <option value="5">Graduate</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="major-filter">Major</label>
+                <select id="major-filter">
+                    <option value="">All Majors</option>
+                    <!-- Will be populated from API -->
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="search">Search</label>
+                <input type="text" id="search" placeholder="Search by name or ID...">
+            </div>
+            
+            <div class="filter-buttons">
+                <button id="apply-filters" class="filter-btn">Apply Filters</button>
+                <button id="reset-filters" class="reset-btn">Reset</button>
+            </div>
+        </div>
+        
+        <div class="student-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Student ID</th>
+                        <th>Year</th>
+                        <th>Major</th>
+                    </tr>
+                </thead>
+                <tbody id="student-list">
+                    <!-- Will be populated from API -->
+                </tbody>
+            </table>
+            <div id="no-students" class="no-students" style="display: none;">
+                No students found matching the criteria.
+            </div>
+        </div>
+        
+        <div class="pagination" id="pagination">
+            <!-- Will be populated based on results -->
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentPage = 1;
+        const studentsPerPage = 10;
+        let allStudents = [];
+        let filteredStudents = [];
+        let uniqueMajors = new Set();
+        
+        // Fetch all students from API
+        async function fetchStudents() {
+            try {
+                const response = await fetch('/students');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch students');
+                }
+                
+                const data = await response.json();
+                allStudents = data.students;
+                filteredStudents = [...allStudents];
+                
+                // Extract unique majors for filter dropdown
+                allStudents.forEach(student => {
+                    if (student.major) {
+                        uniqueMajors.add(student.major);
+                    }
+                });
+                
+                populateMajorFilter();
+                displayStudents();
+                
+            } catch (error) {
+                console.error('Error fetching students:', error);
+            }
+        }
+        
+        // Populate major filter dropdown
+        function populateMajorFilter() {
+            const majorSelect = document.getElementById('major-filter');
+            
+            // Clear existing options except first one
+            while (majorSelect.options.length > 1) {
+                majorSelect.remove(1);
+            }
+            
+            // Add sorted major options
+            [...uniqueMajors].sort().forEach(major => {
+                const option = document.createElement('option');
+                option.value = major;
+                option.textContent = major;
+                majorSelect.appendChild(option);
+            });
+        }
+        
+        // Apply filters to student data
+        function applyFilters() {
+            const yearFilter = document.getElementById('year-filter').value;
+            const majorFilter = document.getElementById('major-filter').value;
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            
+            filteredStudents = allStudents.filter(student => {
+                // Year filter
+                if (yearFilter && student.year !== yearFilter) {
+                    return false;
+                }
+                
+                // Major filter
+                if (majorFilter && student.major !== majorFilter) {
+                    return false;
+                }
+                
+                // Search term filter
+                if (searchTerm) {
+                    const searchable = `${student.name} ${student.student_id} ${student.email}`.toLowerCase();
+                    if (!searchable.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            currentPage = 1; // Reset to first page
+            displayStudents();
+        }
+        
+        // Display students with pagination
+        function displayStudents() {
+            const studentList = document.getElementById('student-list');
+            const noStudents = document.getElementById('no-students');
+            
+            // Clear existing content
+            studentList.innerHTML = '';
+            
+            if (filteredStudents.length === 0) {
+                studentList.style.display = 'none';
+                noStudents.style.display = 'block';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            
+            studentList.style.display = 'table-row-group';
+            noStudents.style.display = 'none';
+            
+            // Calculate pagination
+            const startIndex = (currentPage - 1) * studentsPerPage;
+            const endIndex = Math.min(startIndex + studentsPerPage, filteredStudents.length);
+            const currentStudents = filteredStudents.slice(startIndex, endIndex);
+            
+            // Year mapping
+            const yearMap = {
+                '1': 'Freshman',
+                '2': 'Sophomore',
+                '3': 'Junior',
+                '4': 'Senior',
+                '5': 'Graduate'
+            };
+            
+            // Create student rows
+            currentStudents.forEach(student => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.email}</td>
+                    <td>${student.student_id}</td>
+                    <td>${yearMap[student.year] || student.year}</td>
+                    <td>${student.major}</td>
+                `;
+                
+                studentList.appendChild(row);
+            });
+            
+            // Update pagination controls
+            updatePagination();
+        }
+        
+        // Update pagination controls
+        function updatePagination() {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+            
+            const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+            
+            if (totalPages <= 1) {
+                return; // No pagination needed
+            }
+            
+            // Add previous button
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayStudents();
+                }
+            });
+            paginationDiv.appendChild(prevButton);
+            
+            // Add page buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    displayStudents();
+                });
+                paginationDiv.appendChild(pageButton);
+            }
+            
+            // Add next button
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayStudents();
+                }
+            });
+            paginationDiv.appendChild(nextButton);
+        }
+        
+        // Event listeners
+        document.getElementById('apply-filters').addEventListener('click', applyFilters);
+        
+        document.getElementById('reset-filters').addEventListener('click', () => {
+            document.getElementById('year-filter').value = '';
+            document.getElementById('major-filter').value = '';
+            document.getElementById('search').value = '';
+            filteredStudents = [...allStudents];
+            currentPage = 1;
+            displayStudents();
+        });
+        
+        document.getElementById('logout-btn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/students/logout', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/students/login';
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
+        });
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', fetchStudents);
+    </script>
+</body>
+</html> 

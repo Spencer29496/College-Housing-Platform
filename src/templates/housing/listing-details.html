@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details - Binghamton Housing</title>
+    <style>
+        :root {
+            --primary-color: #005A43; /* Binghamton University primary dark green */
+            --secondary-color: #004333; /* Binghamton dark green */
+            --accent-color: #6CC24A; /* Binghamton light green accent */
+            --dark-color: #5A5C5B; /* Binghamton gray */
+            --light-color: #f5f5f5;
+            --success-color: #6CC24A; /* Binghamton light green */
+            --warning-color: #CEDC00; /* Binghamton lime */
+            --error-color: #BF0D3E; /* Binghamton red */
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: var(--light-color);
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .property-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .property-title {
+            flex: 1;
+            margin-right: 1rem;
+        }
+        
+        .property-title h1 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .property-location {
+            color: #555;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .property-distance {
+            color: #555;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+        
+        .property-price {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .property-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .property-images {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .main-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+        
+        .property-details {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .details-section {
+            margin-bottom: 2rem;
+        }
+        
+        .details-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            width: 150px;
+            color: #555;
+        }
+        
+        .detail-value {
+            flex: 1;
+        }
+        
+        .amenities-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem 1rem;
+        }
+        
+        .amenities-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .amenities-list li::before {
+            content: "✓";
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .map-section {
+            grid-column: 1 / -1;
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .map-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .action-buttons {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            text-align: center;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: #003b2c;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50vh;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-container {
+            text-align: center;
+            padding: 3rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .error-container h2 {
+            color: var(--error-color);
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 900px) {
+            .property-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .property-header {
+                flex-direction: column;
+            }
+            
+            .property-price {
+                width: 100%;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">Binghamton Housing</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/housing/listings">Listings</a></li>
+                <li><a href="/students/login">Student Login</a></li>
+                <li><a href="/students/register">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="container">
+        <div id="loading-container" class="loading-container">
+            <div class="spinner"></div>
+            <p>Loading property details...</p>
+        </div>
+        
+        <div id="property-container" style="display: none;">
+            <div class="property-header">
+                <div class="property-title">
+                    <h1 id="property-title">Property Title</h1>
+                    <p id="property-location" class="property-location">Property Location</p>
+                    <p id="property-distance" class="property-distance"></p>
+                </div>
+                <div id="property-price" class="property-price">Contact for Price</div>
+            </div>
+            
+            <div class="property-grid">
+                <div class="property-images">
+                    <img id="main-image" class="main-image" src="/static/images/placeholder.jpg" alt="Property Image">
+                </div>
+                
+                <div class="property-details">
+                    <div class="details-section">
+                        <h2>Property Details</h2>
+                        <div class="detail-item">
+                            <span class="detail-label">Bedrooms:</span>
+                            <span id="property-bedrooms" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Bathrooms:</span>
+                            <span id="property-bathrooms" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Size:</span>
+                            <span id="property-size" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Availability:</span>
+                            <span id="property-availability" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Pet Policy:</span>
+                            <span id="property-pets" class="detail-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <h2>Location</h2>
+                        <div id="property-map" class="property-map">
+                            <img id="map-image" src="/static/images/placeholder.jpg" alt="Property Location">
+                        </div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <h2>Amenities</h2>
+                        <ul id="amenities-list" class="amenities-list">
+                            <li>Loading amenities...</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a id="original-listing-btn" href="#" target="_blank" class="btn btn-lg">View Original Listing</a>
+                        <a href="/housing/listings" class="btn btn-secondary btn-lg">Back to Listings</a>
+                    </div>
+                </div>
+                
+                <div class="map-section">
+                    <h2>Location</h2>
+                    <p>Distance to Binghamton University: <span id="map-distance">-</span></p>
+                    <div class="map-container">
+                        <iframe id="map-iframe" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="error-container" class="error-container" style="display: none;">
+            <h2>Property Not Found</h2>
+            <p>Sorry, we couldn't find any information about this property.</p>
+            <p>The listing may be unavailable or the URL may be incorrect.</p>
+            <div class="action-buttons" style="justify-content: center;">
+                <a href="/housing/listings" class="btn btn-lg">Back to Listings</a>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get property ID from URL
+            const pathParts = window.location.pathname.split('/');
+            const propertyId = pathParts[pathParts.length - 1];
+            
+            const propertyContainer = document.getElementById('property-container');
+            const loadingContainer = document.getElementById('loading-container');
+            
+            // Fetch property details
+            fetch(`/housing/api/properties/${propertyId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load property details');
+                    }
+                    return response.json();
+                })
+                .then(property => {
+                    // Update property information
+                    document.getElementById('property-title').textContent = property.title || 'Property Details';
+                    document.getElementById('property-location').textContent = property.location || 'Location not available';
+                    document.getElementById('property-price').textContent = property.price || 'Contact for price';
+                    document.getElementById('property-bedrooms').textContent = property.bedrooms || '-';
+                    document.getElementById('property-bathrooms').textContent = property.bathrooms || '-';
+                    document.getElementById('property-size').textContent = property.size || '-';
+                    
+                    // Update images
+                    if (property.image_url) {
+                        document.getElementById('main-image').src = property.image_url;
+                    }
+                    
+                    // Update map image if available
+                    if (property.map_image || property.map_image_url) {
+                        document.getElementById('map-image').src = property.map_image || property.map_image_url;
+                    }
+                    
+                    // ** Set the href for the original listing button **
+                    if (property.url) {
+                        document.getElementById('original-listing-btn').href = property.url;
+                    } else {
+                        // Optionally disable or hide the button if URL is missing
+                        document.getElementById('original-listing-btn').style.display = 'none'; 
+                    }
+                    
+                    // Show the property details and hide loading
+                    propertyContainer.style.display = 'block';
+                    loadingContainer.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingContainer.innerHTML = `
+                        <div class="error">
+                            <p>Error loading property details: ${error.message}</p>
+                            <a href="/housing/listings" class="btn">Back to Listings</a>
+                        </div>
+                    `;
+                });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button id="fetch-btn">Fetch All Listings</button>
+    <button id="fetch-with-price-btn">Fetch Listings With Prices</button>
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <script>
+        document.getElementById('fetch-btn').addEventListener('click', () => {
+            fetchListings(false);
+        });
+        
+        document.getElementById('fetch-with-price-btn').addEventListener('click', () => {
+            fetchListings(true);
+        });
+        
+        function fetchListings(withPriceOnly) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = 'Loading...';
+            
+            // Build the URL with parameters if needed
+            let apiUrl = '/housing/api/listings';
+            if (withPriceOnly) {
+                apiUrl += '?with_price_only=true';
+            }
+            
+            // Test API call
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response:', response);
+                    if (!response.ok) {
+                        throw new Error(`Network error: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data:', data);
+                    if (data && data.length > 0) {
+                        let content = `<p>Success! ${data.length} listings found.</p>`;
+                        
+                        // Add a table to display listings with prices
+                        content += `<table border="1" style="border-collapse: collapse; width: 100%;">
+                            <tr>
+                                <th>Title</th>
+                                <th>Price</th>
+                                <th>Bedrooms</th>
+                                <th>Image</th>
+                            </tr>`;
+                            
+                        data.forEach(listing => {
+                            content += `<tr>
+                                <td>${listing.title}</td>
+                                <td>${listing.price || 'No price'}</td>
+                                <td>${listing.bedrooms}</td>
+                                <td><img src="${listing.image_url}" style="max-width: 150px;"></td>
+                            </tr>`;
+                        });
+                        
+                        content += `</table>`;
+                        resultsDiv.innerHTML = content;
+                    } else {
+                        resultsDiv.innerHTML = 'No listings found.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultsDiv.innerHTML = `Error: ${error.message}`;
+                });
+        }
+    </script>
+</body>
+</html> 

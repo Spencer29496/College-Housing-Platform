@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login</title>
+    <link rel = "stylesheet" href = "{{ url_for('static', filename = 'styles/login.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Student Login</h1>
+        <div id="success-message" class="success" style="display: none;">Registration successful! You can now log in.</div>
+        <div id="verification-prompt" class="verification-prompt" style="display: none;">
+            Your email address has not been verified. <a href="/students/verify-email">Click here to verify</a>.
+        </div>
+        <div id="error-message" class="error" style="display: none;"></div>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Binghamton Email</label>
+                <input type="email" id="email" name="email" pattern=".+@binghamton\.edu$" title="Please enter a valid Binghamton email address (@binghamton.edu)" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div class="register-link">
+            <p>Don't have an account? <a href="/students/register">Register</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Check if coming from registration page
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('registered') === 'true') {
+            document.getElementById('success-message').style.display = 'block';
+        }
+        
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Validate email is a Binghamton email
+            if (!email.endsWith('@binghamton.edu')) {
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Please use a valid Binghamton email address (@binghamton.edu)';
+                errorMessage.style.display = 'block';
+                document.getElementById('verification-prompt').style.display = 'none';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/students/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Successful login
+                    localStorage.setItem('student_id', data.student.id);
+                    window.location.href = '/students/dashboard';
+                } else if (response.status === 403 && data.requires_verification) {
+                    // Email not verified
+                    document.getElementById('verification-prompt').style.display = 'block';
+                    document.getElementById('error-message').style.display = 'none';
+                } else {
+                    // Show error message
+                    const errorMessage = document.getElementById('error-message');
+                    errorMessage.textContent = data.error || 'An error occurred during login';
+                    errorMessage.style.display = 'block';
+                    document.getElementById('verification-prompt').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Connection error. Please try again.';
+                errorMessage.style.display = 'block';
+                document.getElementById('verification-prompt').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html> 

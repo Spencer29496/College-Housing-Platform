@@ -1,0 +1,62 @@
+services:
+
+  scraper:
+    build: .
+    working_dir: /app
+    command: python scraper.py
+    volumes:
+      - ./src:/app
+    depends_on:
+      database:
+        condition: service_healthy
+
+  web:
+    build: .
+    ports:
+      - "8000:5000"
+    volumes:
+      - ./src:/app
+    command: >
+      sh -c "python init_db.py &&
+             python seed_db.py &&
+             python server.py"
+    restart: always
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=database
+      - POSTGRES_DB=test_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=team13
+  redis:
+    image: "redis:alpine"
+  database:
+    container_name: postgres_container
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: team13
+      POSTGRES_DB: test_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  adminer:
+    container_name: adminer_container
+    image: adminer
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - 8080:8080
+
+volumes:
+  postgres_data:
+    driver: local

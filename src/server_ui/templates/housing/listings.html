@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binghamton Housing - Property Listings</title>
+    <link rel = "stylesheet" href = "{{ url_for('static', filename = 'styles/listings.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">Binghamton Housing</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/housing/listings">Listings</a></li>
+                <li><a href="/students/login">Student Login</a></li>
+                <li><a href="/students/register">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <section class="page-header">
+        <h1>Binghamton Housing Listings</h1>
+        {% if bedrooms %}
+            <p>Showing {{ bedrooms }} bedroom properties</p>
+        {% else %}
+            <p>Showing all available properties</p>
+        {% endif %}
+    </section>
+    
+    <div class="container">
+        <div class="bedroom-tabs">
+            <a href="/housing/listings" class="bedroom-tab {% if not bedrooms %}active{% endif %}">All</a>
+            <a href="/housing/listings/1" class="bedroom-tab {% if bedrooms == '1' %}active{% endif %}">1 Bedroom</a>
+            <a href="/housing/listings/2" class="bedroom-tab {% if bedrooms == '2' %}active{% endif %}">2 Bedrooms</a>
+            <a href="/housing/listings/3" class="bedroom-tab {% if bedrooms == '3' %}active{% endif %}">3 Bedrooms</a>
+            <a href="/housing/listings/4" class="bedroom-tab {% if bedrooms == '4' %}active{% endif %}">4+ Bedrooms</a>
+        </div>
+        
+        <section class="filters">
+            <h2>Filter Options</h2>
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label for="min-price">Min Price ($)</label>
+                    <input type="number" id="min-price" placeholder="Min Price" min="0">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="max-price">Max Price ($)</label>
+                    <input type="number" id="max-price" placeholder="Max Price" min="0">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="distance">Max Distance (miles)</label>
+                    <select id="distance">
+                        <option value="">Any</option>
+                        <option value="0.5">0.5 miles</option>
+                        <option value="1">1 mile</option>
+                        <option value="2">2 miles</option>
+                        <option value="5">5 miles</option>
+                        <option value="10">10+ miles</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="sort">Sort By</label>
+                    <select id="sort">
+                        <option value="price_asc">Price (Low to High)</option>
+                        <option value="price_desc">Price (High to Low)</option>
+                        <option value="distance_asc">Distance (Closest)</option>
+                        <option value="newest">Newest</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="show-pricing-only">Show listings</label>
+                    <select id="show-pricing-only">
+                        <option value="false" selected>All listings</option>
+                        <option value="true">With pricing only</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-buttons">
+                <button id="reset-filters" class="btn btn-secondary">Reset Filters</button>
+                <button id="apply-filters" class="btn">Apply Filters</button>
+                <a href="/housing/api/listings" target="_blank" class="btn btn-secondary" style="margin-left: 10px;">View API Data</a>
+            </div>
+        </section>
+        
+        <div id="listings-container" class="listings">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading listings...</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const listingsContainer = document.getElementById('listings-container');
+            const minPriceInput = document.getElementById('min-price');
+            const maxPriceInput = document.getElementById('max-price');
+            const distanceSelect = document.getElementById('distance');
+            const sortSelect = document.getElementById('sort');
+            const showPricingOnlySelect = document.getElementById('show-pricing-only');
+            const applyFiltersBtn = document.getElementById('apply-filters');
+            const resetFiltersBtn = document.getElementById('reset-filters');
+            
+            // Get bedrooms from URL if it exists
+            const pathname = window.location.pathname;
+            const bedroomsMatch = pathname.match(/\/housing\/listings\/(\d+)/);
+            const bedrooms = bedroomsMatch ? bedroomsMatch[1] : null;
+            
+            // Function to fetch listings data
+            function fetchListings() {
+                // Show loading state
+                listingsContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading listings...</p>
+                    </div>
+                `;
+                
+                // Build API URL with filters
+                let apiUrl = '/housing/api/listings';
+                const params = new URLSearchParams();
+                
+                if (bedrooms) {
+                    params.append('bedrooms', bedrooms);
+                }
+                
+                const minPrice = minPriceInput.value;
+                if (minPrice) {
+                    params.append('min_price', minPrice);
+                }
+                
+                const maxPrice = maxPriceInput.value;
+                if (maxPrice) {
+                    params.append('max_price', maxPrice);
+                }
+                
+                const distance = distanceSelect.value;
+                if (distance) {
+                    params.append('distance', distance);
+                }
+                
+                const sort = sortSelect.value;
+                if (sort) {
+                    params.append('sort', sort);
+                }
+                
+                // Add the with_price_only parameter based on user selection
+                const showPricingOnly = showPricingOnlySelect.value;
+                params.append('with_price_only', showPricingOnly);
+                
+                if (params.toString()) {
+                    apiUrl += '?' + params.toString();
+                }
+                
+                console.log('Fetching listings from:', apiUrl);
+                
+                // Fetch data from API
+                fetch(apiUrl)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`Network response error: ${response.status} ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Listings data received:', data);
+                        
+                        // Check if we got a special response for all-no-price listings
+                        if (data.all_no_price && (minPrice || maxPrice)) {
+                            // Display a special message and render all listings
+                            listingsContainer.innerHTML = `
+                                <div class="no-results" style="margin-bottom: 2rem; grid-column: 1 / -1;">
+                                    <h3>Price Filter Not Available</h3>
+                                    <p>${data.message}</p>
+                                    <p>Showing all available listings instead.</p>
+                                </div>
+                            `;
+                            renderListings(data.properties);
+                        } else {
+                            // Normal rendering
+                            renderListings(data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching listings:', error);
+                        listingsContainer.innerHTML = `
+                            <div class="no-results">
+                                <h3>Error loading listings</h3>
+                                <p>Error details: ${error.message}</p>
+                                <p>Please check the browser console for more information.</p>
+                                <button class="btn" onclick="fetchListings()">Try Again</button>
+                            </div>
+                        `;
+                    });
+            }
+            
+            // Function to render listings to the page
+            function renderListings(listings) {
+                console.log("Rendering listings:", listings);
+                
+                // Check if the input is valid
+                if (!listings || typeof listings !== 'object') {
+                    listingsContainer.innerHTML = `
+                        <div class="no-results">
+                            <h3>Error rendering listings</h3>
+                            <p>Invalid data format received.</p>
+                            <p>Data type: ${typeof listings}</p>
+                            <button class="btn" onclick="fetchListings()">Try Again</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Convert to array if it's an object but not an array
+                const listingsArray = Array.isArray(listings) ? listings : Object.values(listings);
+                
+                if (listingsArray.length === 0) {
+                    listingsContainer.innerHTML = `
+                        <div class="no-results">
+                            <h3>No listings found</h3>
+                            <p>Try adjusting your filters or check back later for new listings.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let listingsHTML = '';
+                
+                listingsArray.forEach(listing => {
+                    // Changed prioritization to prefer regular images over map images
+                    let imageUrl;
+                    
+                    console.log("Listing ID:", listing.id, "Title:", listing.title);
+                    console.log("map_image:", listing.map_image);
+                    console.log("map_image_url:", listing.map_image_url);
+                    console.log("image_url:", listing.image_url);
+                    
+                    // First try to use the property image if available
+                    if (listing.image_url) {
+                        imageUrl = listing.image_url;
+                        console.log("Using regular image:", imageUrl);
+                        
+                        // Try to validate the image URL
+                        const testImg = new Image();
+                        testImg.onerror = () => {
+                            console.error(`Failed to load image_url for listing ${listing.id}: ${imageUrl}`);
+                            // If regular image fails, fall back to placeholder
+                            document.querySelector(`[data-listing-id="${listing.id}"] .listing-image img`).src = '/static/images/placeholder.jpg';
+                        };
+                        testImg.src = imageUrl;
+                    } 
+                    // Fall back to map image if regular image not available
+                    else if (listing.map_image) {
+                        imageUrl = listing.map_image;
+                        console.log("Using map image:", imageUrl);
+                        
+                        // Try to validate the image URL
+                        const testImg = new Image();
+                        testImg.onerror = () => {
+                            console.error(`Failed to load map_image for listing ${listing.id}: ${imageUrl}`);
+                            // If map image fails, fall back to placeholder
+                            document.querySelector(`[data-listing-id="${listing.id}"] .listing-image img`).src = '/static/images/placeholder.jpg';
+                        };
+                        testImg.src = imageUrl;
+                    } 
+                    // Try alternative map image field
+                    else if (listing.map_image_url) {
+                        imageUrl = listing.map_image_url;
+                        console.log("Using map image URL:", imageUrl);
+                        
+                        // Try to validate the image URL
+                        const testImg = new Image();
+                        testImg.onerror = () => {
+                            console.error(`Failed to load map_image_url for listing ${listing.id}: ${imageUrl}`);
+                            // If map image URL fails, fall back to placeholder
+                            document.querySelector(`[data-listing-id="${listing.id}"] .listing-image img`).src = '/static/images/placeholder.jpg';
+                        };
+                        testImg.src = imageUrl;
+                    } 
+                    // Last resort: use placeholder
+                    else {
+                        imageUrl = '/static/images/placeholder.jpg';
+                        console.log("Using placeholder image:", imageUrl);
+                    }
+                    
+                    listingsHTML += `
+                        <div class="listing-card" data-listing-id="${listing.id}">
+                            <div class="listing-image">
+                                <img src="${imageUrl}" alt="${listing.title || 'Property listing'}" class="property-map">
+                            </div>
+                            <div class="listing-content">
+                                <h3 class="listing-title">${listing.title || 'Apartment for Rent'}</h3>
+                                <div class="listing-features">
+                                    <div class="listing-feature">
+                                        <span class="feature-badge">${listing.bedrooms !== null && listing.bedrooms !== undefined && listing.bedrooms !== '' ? listing.bedrooms : '?'} BR</span>
+                                        <span class="price-badge">${listing.price && listing.price !== 'No price' && listing.price !== '$' && listing.price !== '$,' ? listing.price : 'Contact for price'}</span>
+                                    </div>
+                                </div>
+                                ${listing.description && listing.description !== 'No description available.' ? 
+                                    `<p class="listing-description">${listing.description}</p>` : ''}
+                                <div class="listing-buttons">
+                                    <a href="/housing/property/${listing.id}" class="btn">View Details</a>
+                                    ${listing.url ? `<a href="${listing.url}" class="btn btn-secondary" target="_blank">Original Listing</a>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                listingsContainer.innerHTML = listingsHTML;
+            }
+            
+            // Event listeners
+            applyFiltersBtn.addEventListener('click', fetchListings);
+            
+            resetFiltersBtn.addEventListener('click', function() {
+                minPriceInput.value = '';
+                maxPriceInput.value = '';
+                distanceSelect.value = '';
+                sortSelect.value = 'price_asc';
+                showPricingOnlySelect.value = 'false';
+                
+                fetchListings();
+            });
+            
+            // Initial fetch
+            fetchListings();
+        });
+    </script>
+</body>
+</html> 

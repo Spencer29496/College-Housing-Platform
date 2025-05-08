@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel = "stylesheet" href = "{{ url_for('static', filename = 'styles/dashboard.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <h1>Student Portal</h1>
+        <div class="navbar-right">
+            <div class="user-info">Welcome, <span id="student-name">Student</span></div>
+            <a href="/" class="logout-btn" style="background-color: #4CAF50; margin-right: 10px; text-decoration: none; display: inline-block;">Home</a>
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome-banner">
+            <h2>Welcome to your Student Dashboard</h2>
+            <p>Here you can view your profile and other important information.</p>
+        </div>
+        
+        <div class="dashboard-cards">
+            <div class="card">
+                <h2>Profile Information</h2>
+                <div class="profile-info" id="profile-info">
+                    <p><strong>Name:</strong> <span id="name">Loading...</span></p>
+                    <p><strong>Email:</strong> <span id="email">Loading...</span></p>
+                    <p><strong>Student ID:</strong> <span id="student-id">Loading...</span></p>
+                    <p><strong>Year:</strong> <span id="year">Loading...</span></p>
+                    <p><strong>Major:</strong> <span id="major">Loading...</span></p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Saved Housing Listings</h2>
+                <div id="saved-listings-container">
+                    <p class="loading-text">Loading your saved listings...</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>
+        // Fetch student profile data
+        async function fetchStudentProfile() {
+            try {
+                // Get student ID from session
+                // First attempt to get ID from session cookie
+                let studentId;
+                
+                // Try to get the student_id from the server session
+                const sessionResponse = await fetch('/students/current');
+                if (sessionResponse.ok) {
+                    const sessionData = await sessionResponse.json();
+                    if (sessionData.student_id) {
+                        studentId = sessionData.student_id;
+                    }
+                }
+                
+                // Fallback to localStorage if needed
+                if (!studentId) {
+                    studentId = localStorage.getItem('student_id');
+                }
+                
+                if (!studentId) {
+                    // If not logged in, redirect to login page
+                    window.location.href = '/students/login';
+                    return;
+                }
+                
+                const response = await fetch(`/students/profile/${studentId}`);
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Unauthorized, redirect to login
+                        window.location.href = '/students/login';
+                        return;
+                    }
+                    throw new Error('Failed to fetch profile');
+                }
+                
+                const data = await response.json();
+                const student = data.student;
+                
+                // Update profile information
+                document.getElementById('student-name').textContent = student.name;
+                document.getElementById('name').textContent = student.name;
+                document.getElementById('email').textContent = student.email;
+                document.getElementById('student-id').textContent = student.student_id;
+                
+                // Convert year number to text
+                const yearMap = {
+                    '1': 'Freshman',
+                    '2': 'Sophomore',
+                    '3': 'Junior',
+                    '4': 'Senior',
+                    '5': 'Graduate'
+                };
+                document.getElementById('year').textContent = yearMap[student.year] || student.year;
+                
+                document.getElementById('major').textContent = student.major;
+                
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+            }
+        }
+        
+        // Handle logout
+        document.getElementById('logout-btn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/students/logout', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    // Clear local storage
+                    localStorage.removeItem('student_id');
+                    // Redirect to login page
+                    window.location.href = '/students/login';
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
+        });
+        
+        // Load profile data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchStudentProfile();
+            fetchSavedListings();
+        });
+        
+        // Fetch and display saved listings
+        async function fetchSavedListings() {
+            try {
+                const response = await fetch('/housing/api/saved-listings');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch saved listings');
+                }
+                
+                const listings = await response.json();
+                const container = document.getElementById('saved-listings-container');
+                
+                // Clear loading text
+                container.innerHTML = '';
+                
+                if (listings.length === 0) {
+                    container.innerHTML = '<p>You haven\'t saved any listings yet.</p>';
+                    return;
+                }
+                
+                // Create a grid for the listings
+                const listingsGrid = document.createElement('div');
+                listingsGrid.className = 'saved-listings-grid';
+                
+                // Add each saved listing
+                listings.forEach(listing => {
+                    const card = document.createElement('div');
+                    card.className = 'saved-listing-card';
+                    
+                    // Format price for display
+                    const price = listing.price || 'Contact for price';
+                    
+                    // Create a link to the full property details
+                    card.innerHTML = `
+                        <div class="listing-image">
+                            <img src="${listing.image_url || '/static/images/placeholder.jpg'}" alt="${listing.title}">
+                        </div>
+                        <div class="listing-content">
+                            <h3>${listing.title}</h3>
+                            <p class="listing-price">${price}</p>
+                            <p class="listing-bedrooms">${listing.bedrooms || '?'} BR</p>
+                            <div class="listing-actions">
+                                <a href="/housing/property/${listing.id}" class="view-btn">View Details</a>
+                                <button class="unsave-btn" data-id="${listing.id}">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    listingsGrid.appendChild(card);
+                });
+                
+                container.appendChild(listingsGrid);
+                
+                // Add event listeners to unsave buttons
+                document.querySelectorAll('.unsave-btn').forEach(button => {
+                    button.addEventListener('click', async function() {
+                        const propertyId = this.getAttribute('data-id');
+                        await unsaveProperty(propertyId);
+                        // Refresh the listings after unsaving
+                        fetchSavedListings();
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Error fetching saved listings:', error);
+                document.getElementById('saved-listings-container').innerHTML = 
+                    '<p>There was an error loading your saved listings. Please try again later.</p>';
+            }
+        }
+        
+        // Function to unsave a property
+        async function unsaveProperty(propertyId) {
+            try {
+                const response = await fetch('/housing/api/saved-listings/unsave', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ property_id: propertyId })
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    alert(data.error || 'Error removing saved listing');
+                }
+                
+                return response.ok;
+            } catch (error) {
+                console.error('Error unsaving property:', error);
+                alert('An error occurred while removing the saved listing');
+                return false;
+            }
+        }
+    </script>
+</body>
+</html> 

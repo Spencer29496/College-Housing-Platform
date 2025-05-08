@@ -1,0 +1,283 @@
+:root {
+    --primary-color: #005A43; /* Binghamton University primary dark green */
+    --accent-color: #6CC24A; /* Binghamton light green accent */
+    --dark-color: #004333; /* Binghamton dark green */
+    --light-color: #ECEFF1;
+    --success-color: #6CC24A; /* Binghamton light green */
+    --warning-color: #CEDC00; /* Binghamton lime */
+    --danger-color: #BF0D3E; /* Binghamton red */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+.page-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.page-header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.property-detail-card {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.property-image {
+    position: relative;
+    height: 400px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+}
+
+.property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.property-content {
+    padding: 2rem;
+}
+
+.property-title {
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
+    color: var(--dark-color);
+}
+
+.property-address {
+    color: #757575;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.property-features {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1.5rem;
+}
+
+.property-feature {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.feature-badge {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.price-badge {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.property-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .property-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.property-description-container h3,
+.amenities-list h3 {
+    font-size: 1.3rem;
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+}
+
+.property-description {
+    line-height: 1.8;
+    color: #555;
+}
+
+.amenities-list {
+    padding: 1rem;
+    background-color: #f8f8f8;
+    border-radius: 6px;
+}
+
+.amenities-list h3 {
+    font-size: 1.3rem;
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+}
+
+.amenities-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.amenities-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    color: #444;
+    font-size: 1.05rem;
+}
+
+.amenities-list li:last-child {
+    border-bottom: none;
+}
+
+.amenities-list li:before {
+    content: "✓";
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-right: 12px;
+    font-size: 1.2rem;
+}
+
+/* New style for the property features list */
+.property-features-list {
+    column-count: 1;
+}
+
+@media (min-width: 576px) {
+    .property-features-list {
+        column-count: 2;
+        column-gap: 2rem;
+    }
+}
+
+.property-features-list li {
+    break-inside: avoid;
+    margin-bottom: 0.5rem;
+}
+
+.btn {
+    display: inline-block;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: var(--primary-color);
+}
+
+.back-button {
+    display: inline-block;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    color: var(--dark-color);
+    font-weight: 500;
+}
+
+.back-button:hover {
+    text-decoration: underline;
+}
+
+.error-container {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.error-container h2 {
+    color: var(--danger-color);
+    margin-bottom: 1rem;
+}
+
+.error-container p {
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.property-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.original-link-btn {
+    background-color: var(--primary-color);
+}
+
+.save-btn {
+    background-color: var(--accent-color);
+}
+
+.save-btn.saved {
+    background-color: var(--success-color);
+}
+
+.save-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Property location styles */
+.property-location {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.property-location h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.location-text {
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.distance-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}

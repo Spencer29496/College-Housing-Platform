@@ -1,0 +1,29 @@
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+env/
+venv/
+
+# Environment files
+.env
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Jupyter/IPython checkpoints
+.ipynb_checkpoints/
+
+# IDE folders
+.vscode/
+.idea/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/

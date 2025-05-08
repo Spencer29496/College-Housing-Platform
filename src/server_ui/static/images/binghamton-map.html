@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Binghamton Map</title>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { width: 600px; height: 400px; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <script>
+        // This function will be called when the Google Maps API loads
+        function initMap() {
+            // Center on Binghamton
+            const binghamton = { lat: 42.098675, lng: -75.917974 };
+            
+            // Create a map object
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13,
+                center: binghamton,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+            
+            // Add markers for the university and downtown
+            const university = { lat: 42.0896, lng: -75.9672 };
+            const downtown = { lat: 42.1015, lng: -75.9127 };
+            
+            // University marker
+            new google.maps.Marker({
+                position: university,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: "green",
+                    fillOpacity: 1,
+                    strokeWeight: 0,
+                    scale: 10
+                }
+            });
+            
+            // Downtown marker
+            new google.maps.Marker({
+                position: downtown,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: "green",
+                    fillOpacity: 1,
+                    strokeWeight: 0,
+                    scale: 10
+                }
+            });
+        }
+    </script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-4V8v7DhCRNe9rLvXTU3jZcsvU_TiVkc&callback=initMap" async defer></script>
+</body>
+</html> 

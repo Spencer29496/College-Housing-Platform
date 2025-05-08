@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Listings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .listings {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .property-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .property-card:hover {
+            transform: translateY(-5px);
+        }
+        .property-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+        .property-details {
+            padding: 15px;
+        }
+        .property-title {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .property-location {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .property-price {
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .bedrooms {
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .back-btn {
+            display: inline-block;
+            margin: 20px 0;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">Back to Home</a>
+        <h1>Property Listings</h1>
+        
+        <div id="listings-container" class="listings">
+            <!-- Listings will be loaded here -->
+            <div class="loading">Loading listings...</div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch and display listings
+        async function loadListings() {
+            const container = document.getElementById('listings-container');
+            
+            try {
+                const response = await fetch('/api/properties');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch listings');
+                }
+                
+                const listings = await response.json();
+                
+                // Clear loading message
+                container.innerHTML = '';
+                
+                if (listings.length === 0) {
+                    container.innerHTML = '<div class="error-message">No properties found.</div>';
+                    return;
+                }
+                
+                // Create a card for each property
+                listings.forEach(property => {
+                    const card = document.createElement('div');
+                    card.className = 'property-card';
+                    
+                    // Handle missing image
+                    const imageUrl = property.image_url || '/static/images/placeholder.jpg';
+                    
+                    // Create HTML for the property card
+                    card.innerHTML = `
+                        <img class="property-image" src="${imageUrl}" alt="${property.title}">
+                        <div class="property-details">
+                            <h3 class="property-title">${property.title}</h3>
+                            <p class="property-location">${property.location}</p>
+                            <div>
+                                <span class="property-price">${property.price}</span>
+                                <span class="bedrooms">${property.bedrooms} BR</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add click handler to go to property page
+                    card.addEventListener('click', () => {
+                        window.open(property.url, '_blank');
+                    });
+                    
+                    container.appendChild(card);
+                });
+                
+            } catch (error) {
+                console.error('Error loading listings:', error);
+                container.innerHTML = `<div class="error-message">Error loading properties: ${error.message}</div>`;
+            }
+        }
+        
+        // Load listings when page loads
+        window.addEventListener('DOMContentLoaded', loadListings);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details</title>
+    <link rel = "stylesheet" href = "{{ url_for('static', filename = 'styles/property_detail.css') }}">
+</head>
+<body>
+    <div class="page-header">
+        <div class="container">
+            <h1>Property Details</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <a href="/housing/listings" class="back-button">← Back to Listings</a>
+        
+        <div id="property-detail-container">
+            <!-- Property details will be loaded here -->
+            <div class="property-detail-card">
+                <div class="property-image">
+                    <img id="property-img" src="" alt="Property Image">
+                </div>
+                <div class="property-content">
+                    <h2 id="property-title" class="property-title"></h2>
+                    
+                    <div class="property-features">
+                        <div class="property-feature">
+                            <span id="property-bedrooms" class="feature-badge"></span>
+                            <span id="property-price" class="price-badge"></span>
+                        </div>
+                    </div>
+
+                    <div class="property-location">
+                        <h3>Location</h3>
+                        <p id="property-location" class="location-text"></p>
+                        <p>Distance to Binghamton University: <span id="property-distance-to-bu" class="distance-badge"></span></p>
+                    </div>
+                    
+                    <div class="property-info-grid">
+                        <div id="property-amenities" class="amenities-list">
+                            <!-- Amenities will be added here dynamically -->
+                        </div>
+                        
+                        <div class="property-description-container">
+                            <h3>Description</h3>
+                            <p id="property-description" class="property-description"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="property-actions">
+                        <a id="original-listing-link" href="#" target="_blank" class="btn original-link-btn" style="display: none;">View Original Listing</a>
+                        <button id="save-listing-btn" class="btn save-btn">Save Listing</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get property ID from URL
+            const propertyId = window.location.pathname.split('/').pop();
+            
+            // Fetch property details - with the correct API endpoint
+            fetch(`/housing/api/properties/${propertyId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Property not found');
+                    }
+                    return response.json();
+                })
+                .then(property => {
+                    // Update the DOM with property details
+                    document.getElementById('property-title').textContent = property.title || 'Unnamed Property';
+                    document.getElementById('property-bedrooms').textContent = `${property.bedrooms || '?'} BR`;
+                    
+                    // Fix price display
+                    const price = property.price || 'Contact for price';
+                    document.getElementById('property-price').textContent = 
+                        (price === '$' || price === '$,' || price === 'No price') ? 'Contact for price' : price;
+                    
+                    const description = property.description || 'No description available.';
+                    document.getElementById('property-description').textContent = description;
+                    
+                    // Display location and distance to BU
+                    if (property.location) {
+                        document.getElementById('property-location').textContent = property.location;
+                    } else {
+                        document.getElementById('property-location').textContent = 'Location information not available';
+                    }
+                    
+                    // Display distance to Binghamton University
+                    if (property.distance_to_bu) {
+                        document.getElementById('property-distance-to-bu').textContent = property.distance_to_bu;
+                    } else {
+                        document.getElementById('property-distance-to-bu').textContent = 'Not available';
+                    }
+                    
+                    // Display amenities based on property data and default assumptions
+                    const amenitiesContainer = document.getElementById('property-amenities');
+                    
+                    // Check if it's from Binghamton West and has a URL
+                    const isFromBinghamtonWest = property.url && property.url.includes('binghamtonwest.com');
+                    
+                    if (isFromBinghamtonWest && property.url) {
+                        // Add a loading indicator for amenities
+                        amenitiesContainer.innerHTML = '<p>Loading property details...</p>';
+                        
+                        // Fetch the original listing content via a proxy request
+                        fetch(`/housing/api/scrape-listing-details?url=${encodeURIComponent(property.url)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success && data.amenities && data.amenities.length > 0) {
+                                    // Create amenities list from the scraped data
+                                    const amenitiesList = document.createElement('ul');
+                                    amenitiesList.className = 'property-features-list';
+                                    data.amenities.forEach(amenity => {
+                                        const li = document.createElement('li');
+                                        li.textContent = amenity;
+                                        amenitiesList.appendChild(li);
+                                    });
+                                    
+                                    // Clear and append the new list
+                                    amenitiesContainer.innerHTML = '<h3>Property Features</h3>';
+                                    amenitiesContainer.appendChild(amenitiesList);
+                                    
+                                    // If we have updated description, use it
+                                    if (data.description && data.description.length > 10) {
+                                        document.getElementById('property-description').textContent = data.description;
+                                    }
+                                } else {
+                                    // Fallback to defaults if scraping failed
+                                    displayDefaultAmenities(property, amenitiesContainer);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching original listing:', error);
+                                // Display default amenities on error
+                                displayDefaultAmenities(property, amenitiesContainer);
+                            });
+                    } else {
+                        // For non-Binghamton West listings or those without URLs, use defaults
+                        displayDefaultAmenities(property, amenitiesContainer);
+                    }
+                    
+                    // Add original listing link if available
+                    if (property.url) {
+                        const originalLink = document.getElementById('original-listing-link');
+                        originalLink.href = property.url;
+                        originalLink.style.display = 'inline-block';
+                    }
+                    
+                    // Use the actual property image URL instead of a random image
+                    const imageUrl = property.image_url || '/static/images/placeholder.jpg';
+                    document.getElementById('property-img').src = imageUrl;
+                })
+                .catch(error => {
+                    // Display error message
+                    const container = document.getElementById('property-detail-container');
+                    container.innerHTML = `
+                        <div class="error-container">
+                            <h2>Property Not Found</h2>
+                            <p>Sorry, we couldn't find the property you're looking for.</p>
+                            <a href="/housing/listings" class="btn">Return to Listings</a>
+                        </div>
+                    `;
+                    console.error('Error:', error);
+                });
+                
+            // Add save button functionality
+            const saveButton = document.getElementById('save-listing-btn');
+            
+            // Check if user is logged in
+            checkSavedStatus(propertyId);
+            
+            saveButton.addEventListener('click', function() {
+                // Get current student ID from session or localStorage
+                getCurrentStudentId()
+                    .then(studentId => {
+                        if (!studentId) {
+                            // Redirect to login if not logged in
+                            window.location.href = '/students/login?redirect=' + encodeURIComponent(window.location.pathname);
+                            return;
+                        }
+                        
+                        // Toggle saved status
+                        if (saveButton.classList.contains('saved')) {
+                            // If already saved, remove from saved listings
+                            unsaveProperty(propertyId);
+                        } else {
+                            // If not saved, add to saved listings
+                            saveProperty(propertyId);
+                        }
+                    });
+            });
+        });
+        
+        // Function to display default amenities when scraping fails or isn't possible
+        function displayDefaultAmenities(property, container) {
+            let amenities = [];
+            
+            // Parse property title to get extra information
+            const title = property.title.toLowerCase();
+            
+            // Add bedroom information
+            if (property.bedrooms) {
+                if (property.bedrooms === 1) {
+                    amenities.push('One Bedroom');
+                } else if (property.bedrooms === 2) {
+                    if (title.includes('large') || title.includes('big')) {
+                        amenities.push('Two Large Bedrooms');
+                    } else {
+                        amenities.push('Two Bedrooms');
+                    }
+                } else {
+                    amenities.push(`${property.bedrooms} Bedrooms`);
+                }
+            }
+            
+            // Add bathroom information
+            amenities.push('One Bathroom');
+            
+            // Add standard amenities based on property type
+            const isFromBinghamtonWest = property.url && property.url.includes('binghamtonwest.com');
+            
+            if (isFromBinghamtonWest) {
+                // Kitchen type
+                if (title.includes('dining')) {
+                    amenities.push('Kitchen with Dining Area');
+                } else {
+                    amenities.push('Kitchen');
+                }
+                
+                // Living room
+                amenities.push('Living Room');
+                
+                // Check for special features in title
+                if (title.includes('yard') || title.includes('enclosed')) {
+                    amenities.push('Enclosed Yard');
+                }
+                
+                if (title.includes('washer') || title.includes('dryer')) {
+                    amenities.push('Washer & Dryer');
+                } else if (title.includes('laundry')) {
+                    amenities.push('Laundry Available');
+                }
+                
+                if (title.includes('porch')) {
+                    amenities.push('Front Porch');
+                }
+                
+                // Standard amenities for most Binghamton West properties
+                amenities.push('Furnished');
+                amenities.push('Pet Friendly');
+                amenities.push('1 Block to Bus Stop');
+            } else {
+                // For non-Binghamton West properties, use more generic amenities
+                amenities.push('Kitchen');
+                amenities.push('Living Room');
+                
+                // Add bathrooms if available
+                if (property.bathrooms) {
+                    amenities.push(`${property.bathrooms} Bathroom${property.bathrooms > 1 ? 's' : ''}`);
+                }
+            }
+            
+            // Remove duplicates while preserving order
+            const uniqueAmenities = [...new Set(amenities)];
+            
+            // Create amenities list with proper styling
+            if (uniqueAmenities.length > 0) {
+                container.innerHTML = '<h3>Property Features</h3>';
+                const amenitiesList = document.createElement('ul');
+                amenitiesList.className = 'property-features-list';
+                
+                uniqueAmenities.forEach(amenity => {
+                    const li = document.createElement('li');
+                    li.textContent = amenity;
+                    amenitiesList.appendChild(li);
+                });
+                
+                container.appendChild(amenitiesList);
+            } else {
+                container.innerHTML = '<p>No amenities information available.</p>';
+            }
+        }
+        
+        // Function to get current student ID
+        async function getCurrentStudentId() {
+            try {
+                // Try to get the student_id from the server session
+                const sessionResponse = await fetch('/students/current');
+                if (sessionResponse.ok) {
+                    const sessionData = await sessionResponse.json();
+                    if (sessionData.student_id) {
+                        return sessionData.student_id;
+                    }
+                }
+                
+                // Fallback to localStorage if needed
+                return localStorage.getItem('student_id');
+            } catch (error) {
+                console.error('Error getting current student ID:', error);
+                return null;
+            }
+        }
+        
+        // Function to check if property is already saved
+        async function checkSavedStatus(propertyId) {
+            try {
+                const studentId = await getCurrentStudentId();
+                const saveButton = document.getElementById('save-listing-btn');
+                
+                if (!studentId) {
+                    // If not logged in, show "Save Listing" button without checking
+                    saveButton.textContent = 'Save Listing';
+                    return;
+                }
+                
+                // Check if property is already saved
+                const response = await fetch(`/housing/api/saved-listings/check?property_id=${propertyId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.is_saved) {
+                        saveButton.textContent = 'Saved';
+                        saveButton.classList.add('saved');
+                    } else {
+                        saveButton.textContent = 'Save Listing';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking saved status:', error);
+                // Default to "Save Listing" on error
+                document.getElementById('save-listing-btn').textContent = 'Save Listing';
+            }
+        }
+        
+        // Function to save a property
+        async function saveProperty(propertyId) {
+            try {
+                const saveButton = document.getElementById('save-listing-btn');
+                saveButton.disabled = true;
+                
+                const response = await fetch('/housing/api/saved-listings/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ property_id: propertyId })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    saveButton.textContent = 'Saved';
+                    saveButton.classList.add('saved');
+                } else {
+                    if (response.status === 401) {
+                        // Unauthorized - redirect to login
+                        alert('Please log in to save listings');
+                        window.location.href = '/students/login?redirect=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    }
+                    console.error('Error saving listing:', data.error);
+                    alert(data.error || 'Error saving listing');
+                }
+                
+                saveButton.disabled = false;
+            } catch (error) {
+                console.error('Error saving property:', error);
+                document.getElementById('save-listing-btn').disabled = false;
+                alert('An error occurred while saving the listing: ' + error.message);
+            }
+        }
+        
+        // Function to unsave a property
+        async function unsaveProperty(propertyId) {
+            try {
+                const saveButton = document.getElementById('save-listing-btn');
+                saveButton.disabled = true;
+                
+                const response = await fetch('/housing/api/saved-listings/unsave', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ property_id: propertyId })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    saveButton.textContent = 'Save Listing';
+                    saveButton.classList.remove('saved');
+                } else {
+                    if (response.status === 401) {
+                        // Unauthorized - redirect to login
+                        alert('Please log in to manage saved listings');
+                        window.location.href = '/students/login?redirect=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    }
+                    console.error('Error removing saved listing:', data.error);
+                    alert(data.error || 'Error removing saved listing');
+                }
+                
+                saveButton.disabled = false;
+            } catch (error) {
+                console.error('Error unsaving property:', error);
+                document.getElementById('save-listing-btn').disabled = false;
+                alert('An error occurred while removing the saved listing: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html> 

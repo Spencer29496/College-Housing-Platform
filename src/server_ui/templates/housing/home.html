@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binghamton Housing - Find Your Perfect Home</title>
+    <link rel = "stylesheet" href = "{{ url_for('static', filename = 'styles/home.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">Binghamton Housing</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/housing/listings">Listings</a></li>
+                <li><a href="/students/login">Student Login</a></li>
+                <li><a href="/students/register">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <section class="hero">
+        <h1>Find Your Perfect Off-Campus Housing</h1>
+        <p>Discover the best apartments and houses near Binghamton University, tailored for students.</p>
+        <a href="/housing/listings" class="btn">Browse Listings</a>
+    </section>
+    
+    <section class="features">
+        <div class="feature-card">
+            <img src="/static/images/easy-search.jpg" alt="Easy Search">
+            <div class="feature-content">
+                <h3>Easy Search</h3>
+                <p>Filter by number of bedrooms, price range, and distance from campus to find the perfect place.</p>
+                <a href="/housing/listings" class="btn">Search Now</a>
+            </div>
+        </div>
+        
+        <div class="feature-card">
+            <img src="/static/images/verified-listings.jpg" alt="Verified Listings">
+            <div class="feature-content">
+                <h3>Verified Listings</h3>
+                <p>All listings are verified to ensure accurate information and fair pricing for Binghamton students.</p>
+                <a href="/housing/listings" class="btn">View Listings</a>
+            </div>
+        </div>
+        
+        <div class="feature-card">
+            <img src="/static/images/student-community.jpg" alt="Student Community">
+            <div class="feature-content">
+                <h3>Student Community</h3>
+                <p>Connect with other students looking for roommates or get advice from those who've lived in the area.</p>
+                <a href="/students/register" class="btn">Join Now</a>
+            </div>
+        </div>
+    </section>
+    
+    <section class="room-options">
+        <h2>Browse by Bedroom Count</h2>
+        <p>Find the perfect space for your needs, whether you're living solo or with roommates.</p>
+        
+        <div class="room-grid">
+            <div class="room-card">
+                <a href="/housing/listings/1">
+                    <img src="/static/images/1-bedroom.jpg" alt="1 Bedroom">
+                    <div class="room-content">
+                        <h3>1 Bedroom</h3>
+                        <p>Perfect for individuals who prefer privacy and independence.</p>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="room-card">
+                <a href="/housing/listings/2">
+                    <img src="/static/images/2-bedrooms.jpg" alt="2 Bedrooms">
+                    <div class="room-content">
+                        <h3>2 Bedrooms</h3>
+                        <p>Ideal for friends or couples looking to share a space.</p>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="room-card">
+                <a href="/housing/listings/3">
+                    <img src="/static/images/3-bedrooms.jpg" alt="3 Bedrooms">
+                    <div class="room-content">
+                        <h3>3 Bedrooms</h3>
+                        <p>Great for small groups of friends who want to live together.</p>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="room-card">
+                <a href="/housing/listings/4">
+                    <img src="/static/images/4-bedrooms.jpg" alt="4+ Bedrooms">
+                    <div class="room-content">
+                        <h3>4+ Bedrooms</h3>
+                        <p>Perfect for larger groups looking to share housing costs.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <script>
+        // Handle image loading errors
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.onerror = function() {
+                    this.src = '/static/images/placeholder.jpg';
+                };
+            });
+        });
+    </script>
+</body>
+</html> 

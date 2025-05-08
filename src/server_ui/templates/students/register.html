@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration</title>
+    <link rel = "stylesheet" href = "{{ url_for('static', filename = 'styles/register.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Student Registration</h1>
+        <div id="error-message" class="error" style="display: none;"></div>
+        <form id="register-form">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Binghamton Email</label>
+                <input type="email" id="email" name="email" pattern=".+@binghamton\.edu$" title="Please enter a valid Binghamton email address (@binghamton.edu)" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="student_id">Student ID</label>
+                    <input type="text" id="student_id" name="student_id" required>
+                </div>
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <select id="year" name="year" required>
+                        <option value="">Select Year</option>
+                        <option value="1">Freshman</option>
+                        <option value="2">Sophomore</option>
+                        <option value="3">Junior</option>
+                        <option value="4">Senior</option>
+                        <option value="5">Graduate</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="major">Major</label>
+                <input type="text" id="major" name="major" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+        <div class="login-link">
+            <p>Already have an account? <a href="/students/login">Login</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const student_id = document.getElementById('student_id').value;
+            const year = document.getElementById('year').value;
+            const major = document.getElementById('major').value;
+            const password = document.getElementById('password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
+            
+            // Validate email is a Binghamton email
+            if (!email.endsWith('@binghamton.edu')) {
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Please use a valid Binghamton email address (@binghamton.edu)';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Validate passwords match
+            if (password !== confirm_password) {
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Passwords do not match';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/students/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        student_id,
+                        year,
+                        major,
+                        password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Registration successful, redirect to verification page
+                    window.location.href = '/students/verify-email';
+                } else {
+                    // Show error message
+                    const errorMessage = document.getElementById('error-message');
+                    errorMessage.textContent = data.error || 'An error occurred during registration';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Connection error. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html> 

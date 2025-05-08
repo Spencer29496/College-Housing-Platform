@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Property Image</title>
+    <style>
+        :root {
+            --primary-color: #005A43; /* Binghamton University primary dark green */
+            --secondary-color: #004333; /* Binghamton dark green */
+            --accent-color: #6CC24A; /* Binghamton light green accent */
+            --dark-color: #5A5C5B; /* Binghamton gray */
+            --light-color: #f5f5f5;
+            --success-color: #6CC24A; /* Binghamton light green */
+            --warning-color: #CEDC00; /* Binghamton lime */
+            --error-color: #BF0D3E; /* Binghamton red */
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: var(--light-color);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input {
+            position: absolute;
+            font-size: 100px;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .file-name {
+            margin-left: 1rem;
+            font-style: italic;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .preview-container {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--dark-color);
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #005A43;
+            border: 1px solid #6CC24A;
+        }
+        
+        .alert-error {
+            background-color: #ffebee;
+            color: #BF0D3E;
+            border: 1px solid #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Upload Property Image</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>Upload Image for Property #{{ property_id }}</h2>
+            
+            <form action="/housing/admin/upload-image/{{ property_id }}" method="POST" enctype="multipart/form-data" id="upload-form">
+                <div class="form-group">
+                    <label for="property_image">Select Image</label>
+                    <div class="file-input-container">
+                        <span class="file-input-label">Choose File</span>
+                        <input type="file" id="property_image" name="property_image" class="file-input" accept="image/*">
+                    </div>
+                    <span class="file-name" id="file-name">No file selected</span>
+                </div>
+                
+                <div class="preview-container">
+                    <img id="image-preview" class="image-preview" alt="Image preview">
+                </div>
+                
+                <button type="submit" class="btn">Upload Image</button>
+            </form>
+            
+            <a href="/housing/property/{{ property_id }}" class="back-link">← Back to Property</a>
+        </div>
+    </div>
+
+    <script>
+        // Show filename when file is selected
+        document.getElementById('property_image').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : 'No file selected';
+            document.getElementById('file-name').textContent = fileName;
+            
+            // Show image preview
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('image-preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Handle form submission via AJAX
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Create success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success';
+                    alert.textContent = data.message;
+                    
+                    // Insert at the top of the form
+                    this.parentNode.insertBefore(alert, this);
+                    
+                    // Reset form
+                    this.reset();
+                    document.getElementById('file-name').textContent = 'No file selected';
+                    document.getElementById('image-preview').style.display = 'none';
+                    
+                    // Redirect to property page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = "/housing/property/" + {{ property_id }};
+                    }, 2000);
+                } else {
+                    // Create error message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-error';
+                    alert.textContent = data.error || 'An error occurred during upload';
+                    
+                    // Insert at the top of the form
+                    this.parentNode.insertBefore(alert, this);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Create error message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Network error occurred';
+                
+                // Insert at the top of the form
+                this.parentNode.insertBefore(alert, this);
+            });
+        });
+    </script>
+</body>
+</html> 

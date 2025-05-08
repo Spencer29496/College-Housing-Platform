@@ -1,0 +1,51 @@
+Housing:
+          Apps/Websites that provide the function of displaying and showing places available (either for rental, buy, sell, etc)
+              -> Zillow               |  All these present a similar interface in terms of use,
+              -> Realtor.com          |  Having a reference a map of the location that you would explore to see all home types available and their characteristics
+              -> Redfin               |  such as the number of people that a home can have, prices, and options to make and reserve a tour 
+
+- look for problems in searching for roommates (like what platforms to go through)
+
+        * Consider people that you know to join in the residence (mainly college students)
+        * Find people preferably during one semester before (Fall). 
+        * Use resources like social media to see if there is someone interested.
+        * Provide a good residence description (main information) and contact the owner/landlord to sign the  lease.
+ 
+- look for problems in searching for housing (did you have to go through several websites?) 
+        
+        * Find good sites to search for places. Sometimes flyers cannot be a good idea or their time is overdue already.
+        * Organize a visit for the first time to see on your own.
+        * Check the prices of the payments & distance to go to the campus/transportation and parking
+        * See if you are going to have or obtain services such as gas to cook /internet & furniture
+
+        
+
+
+How will you use this application?
+- Used to find housing for students. Helping find roomates and having listings all in one place.
+Where would the user be located physically when using this application?
+- For right now, binghamton 
+Where would the results be visible?
+- More availability for listings and easier navigating through them
+When will this application be used?
+- During the fall when looking for housing
+When can the application fail?
+- Less users during the spring. Not being able to get listings in one place
+Who is my user?
+- Students
+Who will deliver the inputs for the application?
+- Us and possibly landlords
+Who will receive the outputs of the application?
+- Students
+What do I know about this application?
+- Look above
+What does this application need to do?
+- Make finding housing and roomates more easy and accessible 
+What are the components of this application?
+- Housing. Roommates. Locaiton. 
+What needs to happen next?
+- Expand? IDK
+What must happen before the next step?
+- Planning
+What needs to be tracked?
+- Listings. Price. Location. Profiles
