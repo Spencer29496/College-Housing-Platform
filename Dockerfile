@@ -1,4 +1,12 @@
-FROM python:3.9-slim
+# Multi-stage build for College Housing Platform
+# Stage 1: Base image with common dependencies
+FROM python:3.9-slim AS base
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
@@ -9,6 +17,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     gnupg \
     ca-certificates \
+    gcc \
+    libpq-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Stage 2: Web application
+FROM base AS web
+
+# Copy application code
+COPY . /app/
+
+# Set user for security
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Default command
+CMD ["python", "app.py"]
+
+# Stage 3: Scraper with Chrome
+FROM base AS scraper
+
+# Install Chrome dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     libappindicator1 \
     libasound2 \
@@ -27,13 +62,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgtk-3-0 \
     libxshmfence-dev \
     xdg-utils \
-    gcc \
-    libpq-dev \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Chrome version
 ENV CHROME_VERSION=114.0.5735.90
 
+# Install Chrome and ChromeDriver
 RUN wget https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chrome-linux64.zip && \
     wget https://chromedriver.storage.googleapis.com/${CHROME_VERSION}/chromedriver_linux64.zip && \
     unzip chrome-linux64.zip && \
@@ -46,18 +81,14 @@ RUN wget https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSI
     rm -rf *.zip
 
 # Verify installation
-RUN ls -la /usr/local/bin/chromedriver && \
-    ls -la /usr/bin/google-chrome && \
-    google-chrome --version
-
-# Install Python packages
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN google-chrome --version && chromedriver --version
 
 # Copy application code
-COPY src/ .
+COPY . /app/
 
-# Disable buffering for real-time logs
-ENV PYTHONUNBUFFERED=1
+# Set user for security
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
 
-CMD ["python", "scraper.py"]
+# Default command for scraper
+CMD ["python", "src/scraper.py"]
